@@ -1,8 +1,5 @@
 package com.moez.QKSMS.common.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 public class QRCodeContent {
 
     public String publicKey;

@@ -644,7 +644,7 @@ class ComposeViewModel @Inject constructor(
                 //.withLatestFrom(conversation) { _, conversation -> conversation }
                 .withLatestFrom(view.textChangedIntent) { _, body -> body }
                 .map { body -> body.toString() }
-                .map { body -> "{" + getEncryptedBody(body,conversationRepo.getConversation(threadId)) + "}" }
+                .map { body -> getEncryptedBody(body,conversationRepo.getConversation(threadId)) }
                 .withLatestFrom(state, attachments, conversation, selectedChips) { body, state, attachments,
                                                                                    conversation, chips ->
 
@@ -744,9 +744,16 @@ class ComposeViewModel @Inject constructor(
         Log.d("ComposeViewModel", "Sending to ${conversation?.id}")
 
         return if(conversation?.publicKey != null && conversation.publicKey!!.isNotEmpty())
-            Base64.encodeToString(AsymmetricUtils.do_RSAEncryption(body, getPublicKey(conversation.publicKey)), Base64.DEFAULT)
+        {
+            Log.d("ComposeViewModel", "Public key detected ${conversation.publicKey}")
+            "{" + Base64.encodeToString(AsymmetricUtils.do_RSAEncryption(body, getPublicKey(conversation.publicKey)), Base64.DEFAULT) + "}"
+        }
         else
+        {
+            Log.d("ComposeViewModel", "No public key detected")
             body
+        }
+
     }
 
     private fun getVCard(contactData: Uri): String? {
