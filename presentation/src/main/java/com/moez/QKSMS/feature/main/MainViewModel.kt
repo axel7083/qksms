@@ -18,10 +18,12 @@
  */
 package com.moez.QKSMS.feature.main
 
+import android.app.Activity
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.moez.QKSMS.R
 import com.moez.QKSMS.common.Navigator
 import com.moez.QKSMS.common.base.QkViewModel
+import com.moez.QKSMS.common.models.QRCodeContent
 import com.moez.QKSMS.common.util.BillingManager
 import com.moez.QKSMS.extensions.mapNotNull
 import com.moez.QKSMS.interactor.DeleteConversations
@@ -76,6 +78,10 @@ class MainViewModel @Inject constructor(
     private val syncContacts: SyncContacts,
     private val syncMessages: SyncMessages
 ) : QkViewModel<MainView, MainState>(MainState(page = Inbox(data = conversationRepo.getConversations()))) {
+
+    private val TAG = "MainViewModel"
+    lateinit var activity: Activity
+    lateinit var qrCodeContent: QRCodeContent
 
     init {
         disposables += deleteConversations
@@ -261,6 +267,7 @@ class MainViewModel @Inject constructor(
                         NavItem.PLUS -> navigator.showQksmsPlusActivity("main_menu")
                         NavItem.HELP -> navigator.showSupport()
                         NavItem.INVITE -> navigator.showInvite()
+                        NavItem.QRCODE -> navigator.showQRCodeDialog(activity,qrCodeContent)
                         else -> Unit
                     }
                     drawerItem

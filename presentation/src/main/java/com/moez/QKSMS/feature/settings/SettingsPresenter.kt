@@ -142,7 +142,7 @@ class SettingsPresenter @Inject constructor(
                     Timber.v("Preference click: ${context.resources.getResourceName(it.id)}")
 
                     when (it.id) {
-                        R.id.theme -> view.showThemePicker()
+                        //R.id.theme -> view.showThemePicker()
 
                         R.id.night -> view.showNightModeDialog()
 

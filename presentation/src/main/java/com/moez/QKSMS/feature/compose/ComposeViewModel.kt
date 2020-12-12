@@ -19,14 +19,21 @@
 package com.moez.QKSMS.feature.compose
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Vibrator
 import android.provider.ContactsContract
 import android.telephony.SmsMessage
+import android.util.Base64
+import android.util.Log
 import androidx.core.content.getSystemService
+import com.google.gson.Gson
 import com.moez.QKSMS.R
 import com.moez.QKSMS.common.Navigator
 import com.moez.QKSMS.common.base.QkViewModel
+import com.moez.QKSMS.common.models.KeyPairData
+import com.moez.QKSMS.common.util.AsymmetricUtils
+import com.moez.QKSMS.common.util.AsymmetricUtils.getPublicKey
 import com.moez.QKSMS.common.util.BillingManager
 import com.moez.QKSMS.common.util.ClipboardUtils
 import com.moez.QKSMS.common.util.MessageDetailsFormatter
@@ -634,10 +641,14 @@ class ComposeViewModel @Inject constructor(
         view.sendIntent
                 .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
                 .filter { permissionManager.hasSendSms().also { if (!it) view.requestSmsPermission() } }
+                //.withLatestFrom(conversation) { _, conversation -> conversation }
                 .withLatestFrom(view.textChangedIntent) { _, body -> body }
                 .map { body -> body.toString() }
+                .map { body -> "{" + getEncryptedBody(body,conversationRepo.getConversation(threadId)) + "}" }
                 .withLatestFrom(state, attachments, conversation, selectedChips) { body, state, attachments,
                                                                                    conversation, chips ->
+
+
                     val subId = state.subscription?.subscriptionId ?: -1
                     val addresses = when (conversation.recipients.isNotEmpty()) {
                         true -> conversation.recipients.map { it.address }
@@ -726,6 +737,16 @@ class ComposeViewModel @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
+    }
+
+    private fun getEncryptedBody(body: String, conversation: Conversation?): String
+    {
+        Log.d("ComposeViewModel", "Sending to ${conversation?.id}")
+
+        return if(conversation?.publicKey != null && conversation.publicKey!!.isNotEmpty())
+            Base64.encodeToString(AsymmetricUtils.do_RSAEncryption(body, getPublicKey(conversation.publicKey)), Base64.DEFAULT)
+        else
+            body
     }
 
     private fun getVCard(contactData: Uri): String? {

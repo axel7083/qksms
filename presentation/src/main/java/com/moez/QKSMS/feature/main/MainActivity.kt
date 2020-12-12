@@ -21,10 +21,14 @@ package com.moez.QKSMS.feature.main
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
+import android.util.Log
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
@@ -37,20 +41,18 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
 import com.moez.QKSMS.R
 import com.moez.QKSMS.common.Navigator
 import com.moez.QKSMS.common.androidxcompat.drawerOpen
 import com.moez.QKSMS.common.base.QkThemedActivity
-import com.moez.QKSMS.common.util.extensions.autoScrollToStart
-import com.moez.QKSMS.common.util.extensions.dismissKeyboard
-import com.moez.QKSMS.common.util.extensions.resolveThemeColor
-import com.moez.QKSMS.common.util.extensions.scrapViews
-import com.moez.QKSMS.common.util.extensions.setBackgroundTint
-import com.moez.QKSMS.common.util.extensions.setTint
-import com.moez.QKSMS.common.util.extensions.setVisible
-import com.moez.QKSMS.common.util.extensions.viewBinding
+import com.moez.QKSMS.common.models.KeyPairData
+import com.moez.QKSMS.common.models.QRCodeContent
+import com.moez.QKSMS.common.util.AsymmetricUtils
+import com.moez.QKSMS.common.util.AsymmetricUtils.generateKeyPair
+import com.moez.QKSMS.common.util.extensions.*
 import com.moez.QKSMS.databinding.MainActivityBinding
 import com.moez.QKSMS.feature.blocking.BlockingDialog
 import com.moez.QKSMS.feature.changelog.ChangelogDialog
@@ -99,7 +101,8 @@ class MainActivity : QkThemedActivity(), MainView {
                 binding.drawer.settings.clicks().map { NavItem.SETTINGS },
                 binding.drawer.plus.clicks().map { NavItem.PLUS },
                 binding.drawer.help.clicks().map { NavItem.HELP },
-                binding.drawer.invite.clicks().map { NavItem.INVITE }))
+                binding.drawer.invite.clicks().map { NavItem.INVITE },
+                binding.drawer.qrcode.clicks().map { NavItem.QRCODE }))
     }
     override val optionsItemIntent: Subject<Int> = PublishSubject.create()
     override val plusBannerIntent by lazy { binding.drawer.plusBanner.clicks() }
@@ -127,6 +130,8 @@ class MainActivity : QkThemedActivity(), MainView {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         viewModel.bindView(this)
+        viewModel.activity = this
+
         onNewIntentIntent.onNext(intent)
 
         toggle.syncState()
@@ -134,6 +139,36 @@ class MainActivity : QkThemedActivity(), MainView {
             dismissKeyboard()
             homeIntent.onNext(Unit)
         }
+
+        val sp: SharedPreferences = applicationContext.getSharedPreferences(getString(R.string.pref_name), Context.MODE_PRIVATE)
+        val rsaKeys = sp.getString(getString(R.string.keypair), null)
+
+       // val rsaKeys = applicationContext.getSharedPreferences(Context.MODE_PRIVATE).getString(getString(R.string.keypair), null)
+
+        if(rsaKeys == null)
+        {
+            Log.d("MainActivity", "No KeyPair detected")
+            with(sp.edit()) {
+                val keys = generateKeyPair()
+                if(keys != null) {
+                    putString(getString(R.string.keypair), Gson().toJson(keys))
+                    apply()
+                }
+                viewModel.qrCodeContent = QRCodeContent(keys.myPublicKey,"0")
+            }
+        }
+        else
+        {
+            Log.d("MainActivity", "KeyPair detected $rsaKeys")
+            val data = Gson().fromJson(rsaKeys, KeyPairData::class.java)
+            //val encoded = Base64.encodeToString(AsymmetricUtils.do_RSAEncryption("Hello world fuck", data.publicKey), Base64.DEFAULT)
+            //Log.d("MainActivity", "encoded: $encoded")
+            //val decoded = AsymmetricUtils.do_RSADecryption(Base64.decode(encoded, Base64.DEFAULT), data.privateKey)
+            //Log.d("MainActivity", "decoded: $decoded")
+            viewModel.qrCodeContent = QRCodeContent(data.myPublicKey,"0")
+        }
+
+
 
         itemTouchCallback.adapter = conversationsAdapter
         conversationsAdapter.autoScrollToStart(binding.recyclerView)

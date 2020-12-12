@@ -83,29 +83,53 @@
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:layout_marginStart="12dp"
-        app:layout_constraintBottom_toBottomOf="@id/body"
+        app:layout_constraintBottom_toBottomOf="@id/bodyLayout"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <com.moez.QKSMS.common.widget.TightTextView
-        android:id="@+id/body"
-        style="@style/TextPrimary"
+    <LinearLayout
+        android:id="@+id/bodyLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginTop="2dp"
         android:layout_marginEnd="12dp"
-        android:autoLink="email|phone|web"
-        android:background="@drawable/message_only"
-        android:gravity="start|center_vertical"
+        android:gravity="center_vertical"
         android:minHeight="36dp"
-        app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/avatar"
-        app:layout_constraintTop_toBottomOf="@id/attachments"
-        app:layout_constraintWidth_max="384dp"
-        tools:backgroundTint="@color/tools_theme"
-        tools:text="@tools:sample/lorem/random" />
+        app:layout_constraintTop_toBottomOf="@id/attachments">
+
+        <com.moez.QKSMS.common.widget.TightTextView
+            android:id="@+id/body"
+            style="@style/TextPrimary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoLink="email|phone|web"
+            android:background="@drawable/message_only"
+            android:gravity="start|center_vertical"
+            android:minHeight="36dp"
+            android:maxWidth="300dp"
+            app:layout_constrainedWidth="true"
+            tools:backgroundTint="@color/tools_theme"
+            tools:maxLength="200"
+            tools:text="@tools:sample/lorem/random" />
+
+        <ImageView
+            android:id="@+id/secureIcon"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/circle"
+            android:backgroundTint="?attr/bubbleColor"
+            android:padding="6dp"
+            android:src="@drawable/ic_padlock"
+            android:tint="@color/tools_theme" />
+
+    </LinearLayout>
+
+
 
     <ProgressBar
         android:id="@+id/cancel"
@@ -124,8 +148,24 @@
         android:textColor="?android:attr/textColorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/body"
+        app:layout_constraintTop_toBottomOf="@id/bodyLayout"
         app:textSize="tertiary"
         tools:text="Sending..." />
+
+    <com.moez.QKSMS.common.widget.QkTextView
+        android:id="@+id/secure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/status"
+        app:layout_constraintTop_toBottomOf="@id/bodyLayout"
+        app:textSize="tertiary"
+        tools:text="Encrypted." />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

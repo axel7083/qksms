@@ -144,6 +144,7 @@ class SyncRepositoryImpl @Inject constructor(
                         name = persistedConversation.name
                         blockingClient = persistedConversation.blockingClient
                         blockReason = persistedConversation.blockReason
+                        publicKey = persistedConversation.publicKey
                     }
                 }
             }

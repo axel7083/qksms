@@ -223,11 +223,11 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
                 .popChangeHandler(QkChangeHandler()))
     }
 
-    override fun showThemePicker() {
+    /*override fun showThemePicker() {
         router.pushController(RouterTransaction.with(ThemePickerController())
                 .pushChangeHandler(QkChangeHandler())
                 .popChangeHandler(QkChangeHandler()))
-    }
+    }*/
 
     override fun showAbout() {
         router.pushController(RouterTransaction.with(AboutController())

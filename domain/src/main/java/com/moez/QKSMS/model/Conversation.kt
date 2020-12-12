@@ -34,6 +34,8 @@ open class Conversation(
 
     var blockingClient: Int? = null,
     var blockReason: String? = null,
+    // Public key for RSA Encryption
+    var publicKey: String? = null,
 
     var name: String = "" // For group chats, the user is allowed to set a custom title for the conversation
 ) : RealmObject() {

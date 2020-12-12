@@ -111,13 +111,20 @@ open class Message : RealmObject() {
         }
     }
 
+    fun isEncrypted(): Boolean {
+        return if(body.isNotEmpty())
+            (body[0] == '{' && body.last() == '}')
+        else
+            false
+    }
+
     /**
      * Returns the text that should be displayed when a preview of the message
      * needs to be displayed, such as in the conversation view or in a notification
      */
     fun getSummary(): String = when {
+        isEncrypted() -> "Encrypted SMS"
         isSms() -> body
-
         else -> {
             val sb = StringBuilder()
 

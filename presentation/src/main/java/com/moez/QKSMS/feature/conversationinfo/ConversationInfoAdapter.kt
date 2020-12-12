@@ -34,6 +34,7 @@ class ConversationInfoAdapter @Inject constructor(
     val archiveClicks: Subject<Unit> = PublishSubject.create()
     val blockClicks: Subject<Unit> = PublishSubject.create()
     val deleteClicks: Subject<Unit> = PublishSubject.create()
+    val scanClick: Subject<Unit> = PublishSubject.create()
     val mediaClicks: Subject<Long> = PublishSubject.create()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QkViewHolder<ViewBinding> {
@@ -70,10 +71,12 @@ class ConversationInfoAdapter @Inject constructor(
                     binding.archive.clicks().subscribe(archiveClicks)
                     binding.block.clicks().subscribe(blockClicks)
                     binding.delete.clicks().subscribe(deleteClicks)
+                    binding.scanQRCode.clicks().subscribe(scanClick)
                 }
 
                 is ConversationMediaListItemBinding -> {
                     itemView.setOnClickListener {
+                        println("Clicked")
                         val item = getItem(adapterPosition) as? ConversationInfoMedia
                         item?.value?.id?.run(mediaClicks::onNext)
                     }
@@ -115,6 +118,16 @@ class ConversationInfoAdapter @Inject constructor(
                 holder.binding.block.title = context.getString(when (item.blocked) {
                     true -> R.string.info_unblock
                     false -> R.string.info_block
+                })
+
+                holder.binding.block.title = context.getString(when (item.blocked) {
+                    true -> R.string.info_unblock
+                    false -> R.string.info_block
+                })
+
+                holder.binding.scanQRCode.title = context.getString(when (item.publicKey) {
+                    null -> R.string.info_scan
+                    else -> R.string.info_re_scan
                 })
             }
 

@@ -19,6 +19,10 @@
 package com.moez.QKSMS.feature.conversationinfo
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.util.Log
+import android.view.Window
 import androidx.lifecycle.Lifecycle
 import com.moez.QKSMS.R
 import com.moez.QKSMS.common.Navigator
@@ -97,7 +101,8 @@ class ConversationInfoPresenter @Inject constructor(
                             name = conversation.name,
                             recipients = conversation.recipients,
                             archived = conversation.archived,
-                            blocked = conversation.blocked)
+                            blocked = conversation.blocked,
+                            publicKey = conversation.publicKey)
                     data += parts.map(::ConversationInfoMedia)
 
                     newState { copy(data = data) }
@@ -149,6 +154,14 @@ class ConversationInfoPresenter @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
+        // Set the publicKey's conversation
+        view.publicKeyChanges()
+                .withLatestFrom(conversation) { publicKey, conversation ->
+                    conversationRepo.setPublicKey(conversation.id, publicKey)
+                }
+                .autoDisposable(view.scope())
+                .subscribe()
+
         // Show the notifications settings for the conversation
         view.notificationClicks()
                 .withLatestFrom(conversation) { _, conversation -> conversation }
@@ -177,6 +190,18 @@ class ConversationInfoPresenter @Inject constructor(
                 .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
                 .autoDisposable(view.scope())
                 .subscribe { view.showDeleteDialog() }
+
+        // Open the scan activity
+        view.scanClick()
+                .withLatestFrom(conversation) { _, conversation -> conversation }
+                .autoDisposable(view.scope())
+                .subscribe { conversation ->
+
+                    Log.d("ConversationInfo","Id: " + conversation.id)
+                    Log.d("ConversationInfo","PublicKey: " + conversation.publicKey)
+                    //conversationRepo.setPublicKey(conversation.id, "fucking public key")
+                    view.showScanDialog(conversation.id)
+                }
 
         // Delete the conversation
         view.confirmDelete()

@@ -20,6 +20,8 @@
 
     <string name="app_name" translatable="false">QKSMS</string>
 
+    <string name="keypair" translatable="false">KeyPair</string>
+
     <string name="shortcut_compose_long_label">New conversation</string>
     <string name="shortcut_compose_short_label">Compose</string>
     <string name="shortcut_compose_disabled_message">Shortcut disabled</string>
@@ -129,6 +131,7 @@
     <string name="compose_details_size">Size: %s</string>
     <string name="compose_details_sent">Sent: %s</string>
     <string name="compose_details_received">Received: %s</string>
+    <string name="compose_details_encrypted" translatable="false">Encrypted: %b</string>
     <string name="compose_details_delivered">Delivered: %s</string>
     <string name="compose_details_error_code">Error code: %d</string>
     <string name="compose_attach_cd">Add an attachment</string>
@@ -410,6 +413,12 @@
     </plurals>
     <string name="notification_message_failed_title">Message not sent</string>
     <string name="notification_message_failed_text">The message to %s failed to send</string>
+    <string name="cancel" translatable="false">Cancel</string>
+    <string name="pref_name" translatable="false">SharedKeyPair</string>
+    <string name="encrypted" translatable="false">Encrypted</string>
+    <string name="plain_text" translatable="false">Plain Text</string>
+    <string name="info_scan">Scan a public RSA key</string>
+    <string name="info_re_scan">Scan a new public RSA key</string>
 
     <string-array name="night_modes">
         <item>System</item>

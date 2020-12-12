@@ -24,13 +24,16 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
@@ -40,11 +43,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
 import com.moez.QKSMS.R
 import com.moez.QKSMS.common.Navigator
 import com.moez.QKSMS.common.base.QkThemedActivity
+import com.moez.QKSMS.common.models.KeyPairData
 import com.moez.QKSMS.common.util.DateFormatter
 import com.moez.QKSMS.common.util.extensions.autoScrollToStart
 import com.moez.QKSMS.common.util.extensions.hideKeyboard
@@ -222,6 +227,12 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         messageAdapter.data = state.messages
         messageAdapter.highlight = state.searchSelectionId
 
+        // Init the adapter with the rights keys
+        val sp: SharedPreferences = applicationContext.getSharedPreferences(getString(R.string.pref_name), Context.MODE_PRIVATE)
+        val rsaKeys = sp.getString(getString(R.string.keypair), null)
+        Log.d("ComposeActivity","rsaKeys: $rsaKeys")
+        messageAdapter.mykeyPairData =  Gson().fromJson(rsaKeys, KeyPairData::class.java)
+
         binding.scheduledGroup.isVisible = state.scheduled != 0L
         binding.scheduledTime.text = dateFormatter.getScheduledTimestamp(state.scheduled)
 
@@ -387,8 +398,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         super.onSaveInstanceState(outState)
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
-        cameraDestination = savedInstanceState?.getParcelable(CameraDestinationKey)
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        cameraDestination = savedInstanceState.getParcelable(CameraDestinationKey)
         super.onRestoreInstanceState(savedInstanceState)
     }
 

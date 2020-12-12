@@ -22,6 +22,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony.Sms
+import android.util.Log
 import com.moez.QKSMS.interactor.ReceiveSms
 import dagger.android.AndroidInjection
 import timber.log.Timber
@@ -29,6 +30,7 @@ import javax.inject.Inject
 
 class SmsReceiver : BroadcastReceiver() {
 
+    private var TAG = "SmsReceiver"
     @Inject lateinit var receiveMessage: ReceiveSms
 
     override fun onReceive(context: Context, intent: Intent) {

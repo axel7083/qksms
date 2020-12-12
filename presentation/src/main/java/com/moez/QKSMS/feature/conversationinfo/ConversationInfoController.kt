@@ -18,7 +18,12 @@
  */
 package com.moez.QKSMS.feature.conversationinfo
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.util.Log
 import android.view.View
+import android.view.Window
+import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bluelinelabs.conductor.RouterTransaction
@@ -41,7 +46,7 @@ import io.reactivex.subjects.Subject
 import javax.inject.Inject
 
 class ConversationInfoController(
-    val threadId: Long = 0
+        val threadId: Long = 0
 ) : QkController<ConversationInfoView, ConversationInfoState, ConversationInfoPresenter,
         ConversationInfoControllerBinding>(ConversationInfoControllerBinding::inflate), ConversationInfoView {
 
@@ -55,6 +60,7 @@ class ConversationInfoController(
     }
 
     private val nameChangeSubject: Subject<String> = PublishSubject.create()
+    private val publicKeyChangeSubject: Subject<String> = PublishSubject.create()
     private val confirmDeleteSubject: Subject<Unit> = PublishSubject.create()
 
     init {
@@ -100,13 +106,14 @@ class ConversationInfoController(
     override fun themeClicks(): Observable<Long> = adapter.themeClicks
     override fun nameClicks(): Observable<*> = adapter.nameClicks
     override fun nameChanges(): Observable<String> = nameChangeSubject
+    override fun publicKeyChanges(): Observable<String> = publicKeyChangeSubject
     override fun notificationClicks(): Observable<*> = adapter.notificationClicks
     override fun archiveClicks(): Observable<*> = adapter.archiveClicks
     override fun blockClicks(): Observable<*> = adapter.blockClicks
     override fun deleteClicks(): Observable<*> = adapter.deleteClicks
+    override fun scanClick(): Observable<*> = adapter.scanClick
     override fun confirmDelete(): Observable<*> = confirmDeleteSubject
     override fun mediaClicks(): Observable<Long> = adapter.mediaClicks
-
     override fun showNameDialog(name: String) = nameDialog.setText(name).show()
 
     override fun showThemePicker(recipientId: Long) {
@@ -132,4 +139,14 @@ class ConversationInfoController(
                 .show()
     }
 
+    override fun showScanDialog(recipientId: Long) {
+        val cdd = QRCodeScanDialog(activity,publicKeyChangeSubject::onNext)
+
+        val window: Window = cdd.window ?: return
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        Log.d("showScanDialog","Lets show")
+        cdd.show()
+        window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+
+    }
 }

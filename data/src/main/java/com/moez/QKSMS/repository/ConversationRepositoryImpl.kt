@@ -129,6 +129,17 @@ class ConversationRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun setPublicKey(id: Long, publicKey: String) {
+        Realm.getDefaultInstance().use { realm ->
+            realm.executeTransaction {
+                realm.where(Conversation::class.java)
+                        .equalTo("id", id)
+                        .findFirst()
+                        ?.publicKey = publicKey
+            }
+        }
+    }
+
     override fun searchConversations(query: CharSequence): List<SearchResult> {
         val realm = Realm.getDefaultInstance()
 

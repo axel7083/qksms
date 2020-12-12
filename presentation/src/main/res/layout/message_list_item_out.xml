@@ -82,28 +82,54 @@
     <com.moez.QKSMS.common.widget.AvatarView
         android:id="@+id/avatar"
         android:layout_width="0dp"
-        android:layout_height="0dp" />
+        android:layout_height="0dp"
+        tools:ignore="MissingConstraints" />
 
-    <com.moez.QKSMS.common.widget.TightTextView
-        android:id="@+id/body"
-        style="@style/TextPrimary"
+
+    <LinearLayout
+        android:id="@+id/bodyLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="60dp"
         android:layout_marginTop="2dp"
         android:layout_marginEnd="12dp"
-        android:autoLink="email|phone|web"
-        android:background="@drawable/message_only"
-        android:backgroundTint="?attr/bubbleColor"
-        android:gravity="start|center_vertical"
-        android:minHeight="36dp"
         app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/attachments"
         app:layout_constraintWidth_max="384dp"
-        tools:text="Hey! How's it going?" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/secureIcon"
+            android:src="@drawable/ic_padlock"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/circle"
+            android:backgroundTint="?attr/bubbleColor"
+            android:padding="6dp"
+            android:layout_marginEnd="8dp"
+            android:tint="@color/tools_theme" />
+
+        <com.moez.QKSMS.common.widget.TightTextView
+            android:id="@+id/body"
+            style="@style/TextPrimary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoLink="email|phone|web"
+            android:background="@drawable/message_only"
+            android:backgroundTint="?attr/bubbleColor"
+            android:gravity="start|center_vertical"
+            android:minHeight="36dp"
+            tools:text="Hey! How's it going?" />
+
+
+    </LinearLayout>
+
+
 
     <ProgressBar
         android:id="@+id/cancel"
@@ -117,8 +143,8 @@
         android:foreground="?attr/selectableItemBackground"
         android:indeterminate="false"
         android:progressDrawable="@drawable/circular_progress_bar"
-        app:layout_constraintBottom_toBottomOf="@id/body"
-        app:layout_constraintEnd_toStartOf="@id/body"
+        app:layout_constraintBottom_toBottomOf="@id/bodyLayout"
+        app:layout_constraintEnd_toStartOf="@id/bodyLayout"
         tools:progress="45"
         tools:progressTint="@color/tools_theme" />
 
@@ -146,8 +172,24 @@
         android:textColor="?android:attr/textColorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/body"
+        app:layout_constraintTop_toBottomOf="@id/bodyLayout"
         app:textSize="tertiary"
         tools:text="Sending..." />
+
+    <com.moez.QKSMS.common.widget.QkTextView
+        android:id="@+id/secure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_margin="10dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/status"
+        app:layout_constraintTop_toBottomOf="@id/bodyLayout"
+        app:textSize="tertiary"
+        tools:text="Encrypted." />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -19,6 +19,7 @@
 package com.moez.QKSMS.feature.compose
 
 import android.animation.ObjectAnimator
+import android.app.Activity
 import android.content.Context
 import android.graphics.Typeface
 import android.os.Build
@@ -26,25 +27,26 @@ import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.StyleSpan
+import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.jakewharton.rxbinding2.view.clicks
 import com.moez.QKSMS.R
+import com.moez.QKSMS.common.QKApplication
 import com.moez.QKSMS.common.base.QkRealmAdapter
 import com.moez.QKSMS.common.base.QkViewHolder
+import com.moez.QKSMS.common.models.KeyPairData
+import com.moez.QKSMS.common.util.AsymmetricUtils
 import com.moez.QKSMS.common.util.Colors
 import com.moez.QKSMS.common.util.DateFormatter
 import com.moez.QKSMS.common.util.TextViewStyler
-import com.moez.QKSMS.common.util.extensions.dpToPx
-import com.moez.QKSMS.common.util.extensions.forwardTouches
-import com.moez.QKSMS.common.util.extensions.setBackgroundTint
-import com.moez.QKSMS.common.util.extensions.setPadding
-import com.moez.QKSMS.common.util.extensions.setTint
-import com.moez.QKSMS.common.util.extensions.setVisible
+import com.moez.QKSMS.common.util.extensions.*
 import com.moez.QKSMS.compat.SubscriptionManagerCompat
 import com.moez.QKSMS.databinding.MessageListItemInBinding
 import com.moez.QKSMS.extensions.isSmil
@@ -57,6 +59,7 @@ import com.moez.QKSMS.model.Message
 import com.moez.QKSMS.model.Recipient
 import com.moez.QKSMS.util.PhoneNumberUtils
 import com.moez.QKSMS.util.Preferences
+import dagger.android.AndroidInjector
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import io.realm.RealmResults
@@ -66,14 +69,14 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 class MessagesAdapter @Inject constructor(
-    subscriptionManager: SubscriptionManagerCompat,
-    private val context: Context,
-    private val colors: Colors,
-    private val dateFormatter: DateFormatter,
-    private val partsAdapterProvider: Provider<PartsAdapter>,
-    private val phoneNumberUtils: PhoneNumberUtils,
-    private val prefs: Preferences,
-    private val textViewStyler: TextViewStyler
+        subscriptionManager: SubscriptionManagerCompat,
+        private val context: Context,
+        private val colors: Colors,
+        private val dateFormatter: DateFormatter,
+        private val partsAdapterProvider: Provider<PartsAdapter>,
+        private val phoneNumberUtils: PhoneNumberUtils,
+        private val prefs: Preferences,
+        private val textViewStyler: TextViewStyler
 ) : QkRealmAdapter<Message, MessageListItemInBinding>() {
 
     companion object {
@@ -87,6 +90,7 @@ class MessagesAdapter @Inject constructor(
 
     }
 
+    var mykeyPairData: KeyPairData? = null
     val clicks: Subject<Long> = PublishSubject.create()
     val partClicks: Subject<Long> = PublishSubject.create()
     val cancelSending: Subject<Long> = PublishSubject.create()
@@ -215,8 +219,14 @@ class MessagesAdapter @Inject constructor(
         // Bind the message status
         bindStatus(holder, message, next)
 
+        // Bind the message secure
+        bindSecure(holder,message)
+
+        holder.binding.bodyLayout.setVisible(true)
+
         // Bind the timestamp
-        val timeSincePrevious = TimeUnit.MILLISECONDS.toMinutes(message.date - (previous?.date ?: 0))
+        val timeSincePrevious = TimeUnit.MILLISECONDS.toMinutes(message.date - (previous?.date
+                ?: 0))
         val subscription = subs.find { sub -> sub.subscriptionId == message.subId }
 
         holder.binding.timestamp.text = dateFormatter.getMessageTimestamp(message.date)
@@ -241,7 +251,7 @@ class MessagesAdapter @Inject constructor(
         }
 
         // Bind the body text
-        val messageText = when (message.isSms()) {
+        var messageText = when (message.isSms()) {
             true -> message.body
             false -> {
                 val subject = message.getCleansedSubject()
@@ -267,6 +277,30 @@ class MessagesAdapter @Inject constructor(
             true -> TextViewStyler.SIZE_EMOJI
             false -> TextViewStyler.SIZE_PRIMARY
         })
+
+        /**
+         * Uncrypting the message
+         * **/
+        if(messageText.isNotEmpty())
+            if(messageText[0] == '{' && messageText.last() == '}') //Probably an encrypted message
+            {
+                if(message.isMe()) //Cannot be decrypted
+                {
+                    messageText = "Has been encrypted."
+                }
+                else //Can be decrypted using our private key
+                {
+                    Log.d("MessageAdapter", "do_RSADecryption")
+                    // TODO: make interaction (lock on the message)
+                    messageText = messageText.subSequence(1, messageText.length - 1)
+                    Log.d("MessageAdapter",messageText.toString())
+                    Log.d("myPrivateKey","Key: " + mykeyPairData?.myPrivateKey)
+
+                    val decoded = AsymmetricUtils.do_RSADecryption(Base64.decode(messageText.toString(), Base64.DEFAULT),mykeyPairData?.privateKey)
+                    Log.d("MessageAdapter","decoded: $decoded")
+                    messageText = decoded
+                }
+            }
 
         holder.binding.body.text = messageText
         holder.binding.body.setVisible(message.isSms() || messageText.isNotBlank())
@@ -310,6 +344,28 @@ class MessagesAdapter @Inject constructor(
         })
     }
 
+    private fun bindSecure(holder: QkViewHolder<MessageListItemInBinding>, message: Message) {
+
+        if(message.isEncrypted())
+        {
+            holder.binding.secure.text = context.getString(R.string.encrypted)
+            holder.binding.secureIcon.setTint(theme.theme)
+            holder.binding.secureIcon.setVisible(true)
+        }
+        else
+        {
+            holder.binding.secure.text = context.getString(R.string.plain_text)
+            holder.binding.secureIcon.setVisible(false)
+        }
+
+        holder.binding.secure.setVisible(when {
+            expanded[message.id] == true -> true
+            message.isSending() -> true
+            message.isFailedMessage() -> true
+            else -> false
+        })
+    }
+
     override fun getItemViewType(position: Int): Int {
         val message = getItem(position) ?: return -1
         return when (message.isMe()) {
@@ -334,3 +390,4 @@ class MessagesAdapter @Inject constructor(
 
     }
 }
+

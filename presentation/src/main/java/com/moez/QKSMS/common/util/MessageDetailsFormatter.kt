@@ -99,6 +99,11 @@ class MessageDetailsFormatter @Inject constructor(
                 ?.let { context.getString(R.string.compose_details_error_code, it) }
                 ?.let(builder::appendln)
 
+        // Specify if the message is encrypted or not
+        message.isEncrypted()
+                .let { context.getString(R.string.compose_details_encrypted, it) }
+                .let(builder::appendln)
+
         return builder.toString().trim()
     }
 

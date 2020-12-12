@@ -43,6 +43,6 @@ interface SettingsView : QkViewContract<SettingsState> {
     fun showSignatureDialog(signature: String)
     fun showMmsSizePicker()
     fun showSwipeActions()
-    fun showThemePicker()
+    //fun showThemePicker()
     fun showAbout()
 }

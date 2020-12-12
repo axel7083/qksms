@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.moez.QKSMS",
+  "variantName": "noAnalyticsDebug",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "properties": [],
+      "versionCode": 2213,
+      "versionName": "3.8.1",
+      "enabled": true,
+      "outputFile": "QKSMS-v3.8.1-noAnalytics-debug.apk"
+    }
+  ]
+}

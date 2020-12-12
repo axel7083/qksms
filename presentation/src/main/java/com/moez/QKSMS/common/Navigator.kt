@@ -23,19 +23,29 @@ import android.app.role.RoleManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
 import android.provider.Settings
 import android.provider.Telephony
+import android.util.Log
+import android.view.Window
 import android.webkit.MimeTypeMap
+import android.widget.LinearLayout
 import androidx.core.content.FileProvider
+import com.google.gson.Gson
 import com.moez.QKSMS.BuildConfig
+import com.moez.QKSMS.common.dialogs.QRCodeDialog
+import com.moez.QKSMS.common.models.QRCodeContent
 import com.moez.QKSMS.common.util.BillingManager
+import com.moez.QKSMS.common.util.QRCodeUtils
 import com.moez.QKSMS.feature.backup.BackupActivity
 import com.moez.QKSMS.feature.blocking.BlockingActivity
 import com.moez.QKSMS.feature.compose.ComposeActivity
 import com.moez.QKSMS.feature.conversationinfo.ConversationInfoActivity
+import com.moez.QKSMS.feature.conversationinfo.QRCodeScanDialog
 import com.moez.QKSMS.feature.gallery.GalleryActivity
 import com.moez.QKSMS.feature.notificationprefs.NotificationPrefsActivity
 import com.moez.QKSMS.feature.plus.PlusActivity
@@ -290,6 +300,18 @@ class Navigator @Inject constructor(
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
             startActivity(intent)
         }
+    }
+
+    fun showQRCodeDialog(activity: Activity, qrCodeContent: QRCodeContent)
+    {
+        Log.d("showQRCodeDialog","Creating QRCode")
+        val cdd = QRCodeDialog(activity,QRCodeUtils.GenerateQRCode(Gson().toJson(qrCodeContent),activity.applicationContext))
+
+        val window: Window = cdd.window ?: return
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        Log.d("showScanDialog","Lets show")
+        cdd.show()
+        window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
     }
 
 }

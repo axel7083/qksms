@@ -37,6 +37,8 @@ interface ConversationRepository {
 
     fun setConversationName(id: Long, name: String)
 
+    fun setPublicKey(id: Long, publicKey: String)
+
     fun searchConversations(query: CharSequence): List<SearchResult>
 
     fun getBlockedConversations(): RealmResults<Conversation>
